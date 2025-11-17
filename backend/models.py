@@ -1,3 +1,4 @@
+# backend/models.py
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -9,8 +10,12 @@ class Car(db.Model):
     year = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)
     mileage = db.Column(db.Integer, default=0)
-    condition = db.Column(db.String(20), default='Used')  # e.g., 'New', 'Used'
+    condition = db.Column(db.String(20), default='Used')
     transmission = db.Column(db.String(20), default='Automatic')
     fuel_type = db.Column(db.String(20), default='Petrol')
     description = db.Column(db.Text, nullable=True)
-    image_url = db.Column(db.String(255), nullable=True)  # Path to main image
+    
+    # NEW FIELDS
+    is_featured = db.Column(db.Boolean, default=False)
+    is_sold = db.Column(db.Boolean, default=False)
+    image_urls = db.Column(db.Text, nullable=True)  # Store as comma-separated string
