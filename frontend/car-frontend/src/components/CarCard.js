@@ -17,7 +17,7 @@ const CarCard = ({ car }) => {
       )}
       {car.is_featured && (
         <div className="position-absolute top-0 end-0 p-3">
-          <span className="badge bg-warning text-dark">★ Featured</span>
+          <span className="badge bg-warning text-dark">Featured</span>
         </div>
       )}
 
@@ -41,10 +41,10 @@ const CarCard = ({ car }) => {
           {car.year} • {car.mileage.toLocaleString()} km • {car.condition}
         </Card.Text>
         <Link to={`/car/${car.id}`}>
-          <Button variant="primary">View Details</Button>
+          <Button variant="primary" className="w-100">View Details</Button>
         </Link>
       </Card.Body>
-    </Card>
+    |</Card>
   );
 };
 

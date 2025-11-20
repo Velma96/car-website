@@ -1,38 +1,105 @@
+/* src/App.css - Clean Light Grey Professional Theme */
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  background: #f5f7fa;
+  color: #333;
+}
+
+/* Navbar - White with elegant blue/gold accent */
+.navbar-custom {
+  background: white !important;
+  padding: 1rem 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-bottom: 4px solid #0066cc;
+}
+
+.brand-text {
+  font-size: 1.8rem;
+  color: #0066cc !important;
+  font-weight: 800;
+}
+
+.navbar-custom .nav-link {
+  color: #333 !important;
+  font-weight: 600;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.navbar-custom .nav-link:hover {
+  background: #0066cc;
+  color: white !important;
+}
+
+/* Footer */
+.footer-custom {
+  background: #1a1a1a;
   color: white;
+  border-top: 4px solid #0066cc;
 }
 
-.App-link {
-  color: #61dafb;
+/* Cards - Clean white with soft shadow */
+.card {
+  background: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+  transition: all 0.3s ease;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0,102,204,0.2) !important;
+}
+
+/* Buttons */
+.btn-success,
+.btn-primary {
+  background: #0066cc !important;
+  border: none !important;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+}
+
+.btn-success:hover,
+.btn-primary:hover {
+  background: #0052a3 !important;
+  transform: translateY(-2px);
+}
+
+/* Gold accents for price & badges */
+.text-gold {
+  color: #e6b800 !important;
+  font-weight: bold;
+}
+
+.bg-gold {
+  background: #e6b800 !important;
+  color: #000 !important;
+}
+
+/* SOLD badge */
+.badge.bg-danger {
+  font-size: 1.1rem !important;
+  padding: 0.8em 1.2em;
+}
+
+/* Featured badge */
+.badge.bg-warning {
+  background: #e6b800 !important;
+  color: #000 !important;
+}
+.brand-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 10px 20px rgba(0,102,204,0.3) !important;
+}
+.brand-btn img {
+  transition: transform 0.3s ease;
+}
+
+.brand-btn:hover img {
+  transform: scale(1.2);
 }

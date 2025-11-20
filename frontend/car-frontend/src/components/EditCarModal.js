@@ -3,6 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
 
+const brands = [
+  "Toyota", "Nissan", "Honda", "Mercedes", "BMW",
+  "Subaru", "Mazda", "Isuzu", "Volkswagen", "Land Rover",
+  "Mitsubishi", "Suzuki", "Ford", "Hyundai", "Kia"
+];
+
 const EditCarModal = ({ show, onHide, car, onUpdated }) => {
   const [formData, setFormData] = useState({
     make: '', model: '', year: '', price: '', mileage: '',
@@ -78,40 +84,82 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={handleSubmit}>
-          {/* Same fields as AddCarForm — copy the layout you like */}
-          {/* I'll keep it compact here */}
           <div className="row">
             <div className="col-md-6">
-              <Form.Group className="mb-3"><Form.Label>Make</Form.Label><Form.Control name="make" value={formData.make} onChange={handleChange} required /></Form.Group>
-              <Form.Group className="mb-3"><Form.Label>Model</Form.Label><Form.Control name="model" value={formData.model} onChange={handleChange} required /></Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Make (Brand)</Form.Label>
+                <Form.Select name="make" value={formData.make} onChange={handleChange} required>
+                  <option value="">Choose brand...</option>
+                  {brands.map(brand => (
+                    <option key={brand} value={brand}>{brand}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Model</Form.Label>
+                <Form.Control name="model" value={formData.model} onChange={handleChange} required />
+              </Form.Group>
             </div>
             <div className="col-md-6">
-              <Form.Group className="mb-3"><Form.Label>Year</Form.Label><Form.Control type="number" name="year" value={formData.year} onChange={handleChange} required /></Form.Group>
-              <Form.Group className="mb-3"><Form.Label>Price (KES)</Form.Label><Form.Control type="number" name="price" value={formData.price} onChange={handleChange} required /></Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Year</Form.Label>
+                <Form.Control type="number" name="year" value={formData.year} onChange={handleChange} required />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Price (KES)</Form.Label>
+                <Form.Control type="number" name="price" value={formData.price} onChange={handleChange} required />
+              </Form.Group>
             </div>
           </div>
 
-          <Form.Group className="mb-3"><Form.Label>Mileage (km)</Form.Label><Form.Control type="number" name="mileage" value={formData.mileage} onChange={handleChange} /></Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Mileage (km)</Form.Label>
+            <Form.Control type="number" name="mileage" value={formData.mileage} onChange={handleChange} />
+          </Form.Group>
 
           <div className="row">
-            <div className="col-md-4"><Form.Group className="mb-3"><Form.Label>Condition</Form.Label><Form.Select name="condition" value={formData.condition} onChange={handleChange}><option>Used</option><option>New</option></Form.Select></Form.Group></div>
-            <div className="col-md-4"><Form.Group className="mb-3"><Form.Label>Transmission</Form.Label><Form.Select name="transmission" value={formData.transmission} onChange={handleChange}><option>Automatic</option><option>Manual</option></Form.Select></Form.Group></div>
-            <div className="col-md-4"><Form.Group className="mb-3"><Form.Label>Fuel Type</Form.Label><Form.Select name="fuel_type" value={formData.fuel_type} onChange={handleChange}><option>Petrol</option><option>Diesel</option><option>Electric</option><option>Hybrid</option></Form.Select></Form.Group></div>
+            <div className="col-md-4">
+              <Form.Group className="mb-3">
+                <Form.Label>Condition</Form.Label>
+                <Form.Select name="condition" value={formData.condition} onChange={handleChange}>
+                  <option>Used</option><option>New</option>
+                </Form.Select>
+              </Form.Group>
+            </div>
+            <div className="col-md-4">
+              <Form.Group className="mb-3">
+                <Form.Label>Transmission</Form.Label>
+                <Form.Select name="transmission" value={formData.transmission} onChange={handleChange}>
+                  <option>Automatic</option><option>Manual</option>
+                </Form.Select>
+              </Form.Group>
+            </div>
+            <div className="col-md-4">
+              <Form.Group className="mb-3">
+                <Form.Label>Fuel Type</Form.Label>
+                <Form.Select name="fuel_type" value={formData.fuel_type} onChange={handleChange}>
+                  <option>Petrol</option><option>Diesel</option><option>Electric</option><option>Hybrid</option>
+                </Form.Select>
+              </Form.Group>
+            </div>
           </div>
 
-          <Form.Group className="mb-3"><Form.Label>Description</Form.Label><Form.Control as="textarea" rows={3} name="description" value={formData.description} onChange={handleChange} /></Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Description</Form.Label>
+            <Form.Control as="textarea" rows={3} name="description" value={formData.description} onChange={handleChange} />
+          </Form.Group>
 
-          {/* NEW FIELDS */}
           <Form.Group className="mb-3">
             <Form.Check type="checkbox" label="Featured Car (show on homepage)" name="is_featured" checked={formData.is_featured} onChange={handleChange} />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Check type="checkbox" label="Mark as Sold" name="is_sold" checked={formData.is_sold} onChange={handleChange} />
           </Form.Group>
+
           <Form.Group className="mb-3">
             <Form.Label>Add more images (optional)</Form.Label>
             <Form.Control type="file" name="images" multiple accept="image/*" onChange={handleChange} />
-            <Form.Text>Current images will stay. New ones will be added.</Form.Text>
+            <Form.Text>Current images remain. New ones will be added.</Form.Text>
           </Form.Group>
 
           <div className="d-flex justify-content-end gap-2">

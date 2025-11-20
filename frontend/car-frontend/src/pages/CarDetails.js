@@ -1,11 +1,12 @@
 // src/pages/CarDetails.js
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Row, Col, Carousel, Badge, Button } from 'react-bootstrap';
 
 const CarDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,10 +29,12 @@ const CarDetails = () => {
     ? car.image_urls
     : ['https://via.placeholder.com/800x600?text=No+Image+Available'];
 
+  const carName = `${car.make} ${car.model} ${car.year}`;
+
   return (
     <Container className="my-5">
       <Row>
-        {/* Image Gallery - Left Side */}
+        {/* Image Gallery */}
         <Col lg={7} className="mb-4 mb-lg-0">
           <div className="position-relative">
             {car.is_sold && (
@@ -58,7 +61,6 @@ const CarDetails = () => {
               ))}
             </Carousel>
 
-            {/* Thumbnails below (optional - looks pro) */}
             {images.length > 1 && (
               <div className="mt-3 row g-2">
                 {images.map((url, index) => (
@@ -66,7 +68,7 @@ const CarDetails = () => {
                     <img
                       src={`http://127.0.0.1:5000${url}`}
                       className="img-fluid rounded cursor-pointer border"
-                      alt={`Thumbnail ${index + 1} of ${car.make} ${car.model}`}
+                      alt={`Thumbnail ${index + 1}`}
                       style={{ height: '80px', objectFit: 'cover' }}
                       onClick={() => document.querySelector(`.carousel-indicators button[data-bs-slide-to="${index}"]`)?.click()}
                     />
@@ -77,7 +79,7 @@ const CarDetails = () => {
           </div>
         </Col>
 
-        {/* Car Info - Right Side */}
+        {/* Car Info */}
         <Col lg={5}>
           <div className="ps-lg-4">
             <h1 className="display-5 fw-bold">
@@ -107,18 +109,29 @@ const CarDetails = () => {
               </div>
             )}
 
-            <div className="d-grid gap-2 d-md-flex">
-              <Button size="lg" variant="success">
+            <div className="d-grid gap-3">
+              <Button 
+                size="lg" 
+                variant="success" 
+                className="fw-bold"
+                onClick={() => window.location.href = 'tel:+254700123456'}
+              >
                 Call / WhatsApp: +254 700 123 456
               </Button>
-              <Button size="lg" variant="outline-primary">
-                Send Inquiry
+
+              <Button 
+                size="lg" 
+                variant="primary"
+                className="fw-bold"
+                onClick={() => navigate('/contact', { state: { carInterest: carName } })}
+              >
+                Send Inquiry – We’ll Call You in 10 Minutes!
               </Button>
             </div>
 
             <div className="mt-4">
               <Link to="/">
-                <Button variant="link">← Back to Inventory</Button>
+                <Button variant="link">Back to Inventory</Button>
               </Link>
             </div>
           </div>
