@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
+import API_BASE from '../api/api';  // This gives you HTTPS on live, HTTP on local
 
 const brands = [
   "Toyota", "Nissan", "Honda", "Mercedes", "BMW",
@@ -16,6 +17,7 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
     description: '', is_featured: false, is_sold: false, images: null
   });
 
+  // Populate form when car data is passed
   useEffect(() => {
     if (car) {
       setFormData({
@@ -48,12 +50,13 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const data = new FormData();
     data.append('make', formData.make);
     data.append('model', formData.model);
     data.append('year', formData.year);
     data.append('price', formData.price);
-    data.append('mileage', formData.mileage || 0);
+    if (formData.mileage) data.append('mileage', formData.mileage);
     data.append('condition', formData.condition);
     data.append('transmission', formData.transmission);
     data.append('fuel_type', formData.fuel_type);
@@ -68,20 +71,26 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
     }
 
     try {
-      await axios.put(`http://velma-backend.onrender.com/cars/${car.id}`, data);
-      onUpdated();
-      onHide();
+      await axios.put(`${API_BASE}/cars/${car.id}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      onUpdated();  // Refresh the car list
+      onHide();     // Close modal
     } catch (err) {
-      alert('Error updating car');
-      console.error(err);
+      console.error("Update failed:", err.response || err);
+      alert('Failed to update car. Check internet or contact developer.');
     }
   };
 
+  if (!car) return null;
+
   return (
-    <Modal show={show} onHide={onHide} size="lg">
+    <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header closeButton>
-        <Modal.Title>Edit: {car?.make} {car?.model}</Modal.Title>
+        <Modal.Title>Edit: {car.make} {car.model} ({car.year})</Modal.Title>
       </Modal.Header>
+
       <Modal.Body>
         <Form onSubmit={handleSubmit}>
           <div className="row">
@@ -95,16 +104,19 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
                   ))}
                 </Form.Select>
               </Form.Group>
+
               <Form.Group className="mb-3">
                 <Form.Label>Model</Form.Label>
                 <Form.Control name="model" value={formData.model} onChange={handleChange} required />
               </Form.Group>
             </div>
+
             <div className="col-md-6">
               <Form.Group className="mb-3">
                 <Form.Label>Year</Form.Label>
                 <Form.Control type="number" name="year" value={formData.year} onChange={handleChange} required />
               </Form.Group>
+
               <Form.Group className="mb-3">
                 <Form.Label>Price (KES)</Form.Label>
                 <Form.Control type="number" name="price" value={formData.price} onChange={handleChange} required />
@@ -113,7 +125,7 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
           </div>
 
           <Form.Group className="mb-3">
-            <Form.Label>Mileage (km)</Form.Label>
+            <Form.Label>Mileage (km) - optional</Form.Label>
             <Form.Control type="number" name="mileage" value={formData.mileage} onChange={handleChange} />
           </Form.Group>
 
@@ -122,7 +134,8 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
               <Form.Group className="mb-3">
                 <Form.Label>Condition</Form.Label>
                 <Form.Select name="condition" value={formData.condition} onChange={handleChange}>
-                  <option>Used</option><option>New</option>
+                  <option>Used</option>
+                  <option>New</option>
                 </Form.Select>
               </Form.Group>
             </div>
@@ -130,7 +143,8 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
               <Form.Group className="mb-3">
                 <Form.Label>Transmission</Form.Label>
                 <Form.Select name="transmission" value={formData.transmission} onChange={handleChange}>
-                  <option>Automatic</option><option>Manual</option>
+                  <option>Automatic</option>
+                  <option>Manual</option>
                 </Form.Select>
               </Form.Group>
             </div>
@@ -138,7 +152,10 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
               <Form.Group className="mb-3">
                 <Form.Label>Fuel Type</Form.Label>
                 <Form.Select name="fuel_type" value={formData.fuel_type} onChange={handleChange}>
-                  <option>Petrol</option><option>Diesel</option><option>Electric</option><option>Hybrid</option>
+                  <option>Petrol</option>
+                  <option>Diesel</option>
+                  <option>Electric</option>
+                  <option>Hybrid</option>
                 </Form.Select>
               </Form.Group>
             </div>
@@ -149,22 +166,34 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
             <Form.Control as="textarea" rows={3} name="description" value={formData.description} onChange={handleChange} />
           </Form.Group>
 
-          <Form.Group className="mb-3">
-            <Form.Check type="checkbox" label="Featured Car (show on homepage)" name="is_featured" checked={formData.is_featured} onChange={handleChange} />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Check type="checkbox" label="Mark as Sold" name="is_sold" checked={formData.is_sold} onChange={handleChange} />
-          </Form.Group>
+          <div className="d-flex gap-4 mb-3">
+            <Form.Check
+              type="checkbox"
+              label="Featured Car (show on homepage)"
+              name="is_featured"
+              checked={formData.is_featured}
+              onChange={handleChange}
+            />
+            <Form.Check
+              type="checkbox"
+              label="Mark as Sold"
+              name="is_sold"
+              checked={formData.is_sold}
+              onChange={handleChange}
+            />
+          </div>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Add more images (optional)</Form.Label>
+          <Form.Group className="mb-4">
+            <Form.Label>Add More Images (optional)</Form.Label>
             <Form.Control type="file" name="images" multiple accept="image/*" onChange={handleChange} />
-            <Form.Text>Current images remain. New ones will be added.</Form.Text>
+            <Form.Text className="text-muted">
+              Current images stay. New ones will be added.
+            </Form.Text>
           </Form.Group>
 
           <div className="d-flex justify-content-end gap-2">
             <Button variant="secondary" onClick={onHide}>Cancel</Button>
-            <Button variant="primary" type="submit">Save Changes</Button>
+            <Button variant="success" type="submit">Save Changes</Button>
           </div>
         </Form>
       </Modal.Body>
