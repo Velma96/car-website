@@ -18,12 +18,15 @@ const Contact = () => {
 
   const [status, setStatus] = useState(null);
 
-  // Auto-fill car name — safe & clean (no ESLint warning)
+  // Use environment variable — works locally AND on live site
+  const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+
+  // Auto-fill car name — safe & clean
   useEffect(() => {
     if (prefilledCar && !formData.car_interest) {
       setFormData(prev => ({ ...prev, car_interest: prefilledCar }));
     }
-  }, [prefilledCar, formData.car_interest]); // Now fully correct
+  }, [prefilledCar, formData.car_interest]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -34,16 +37,17 @@ const Contact = () => {
     setStatus('sending');
 
     try {
-      await axios.post('http://velma-backend.onrender.com/send-inquiry', formData);
+      await axios.post(`${API_URL}/send-inquiry`, formData);
       setStatus('success');
       setFormData({
         name: '',
         phone: '',
         email: '',
-        car_interest: prefilledCar, // Keep car name after success
+        car_interest: prefilledCar, // Keep the car name after success
         message: ''
       });
     } catch (err) {
+      console.error("Inquiry failed:", err);
       setStatus('error');
     }
   };

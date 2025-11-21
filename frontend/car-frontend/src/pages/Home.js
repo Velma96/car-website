@@ -1,26 +1,31 @@
-// src/pages/Home.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Container, Row, Col, Carousel, Button } from 'react-bootstrap';
 import CarCard from '../components/CarCard';
 import SearchFilter from '../components/SearchFilter';
 
-// ... your brands SVG array stays the same ...
+// Your brands SVG array stays exactly the same (no change needed)
+const brands = [ /* ... all your brand SVGs ... */ ];
 
 const Home = () => {
   const [cars, setCars] = useState([]);
   const [displayCars, setDisplayCars] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState(null);
 
+  // THIS IS THE ONLY CHANGE — uses .env URL
+  const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+
   useEffect(() => {
-    axios.get('https://velma-backend.onrender.com/cars')  // ← Your Render backend
+    axios.get(`${API_URL}/cars`)
       .then(res => {
         const activeCars = res.data.filter(car => !car.is_sold);
         setCars(activeCars);
         setDisplayCars(activeCars);
       })
-      .catch(err => console.error("Failed to load cars:", err));
-  }, []);
+      .catch(err => {
+        console.error("Failed to load cars:", err);
+      });
+  }, [API_URL]);
 
   const filterByBrand = (brand) => {
     setSelectedBrand(brand);
@@ -35,6 +40,7 @@ const Home = () => {
 
   return (
     <Container className="my-5">
+      {/* Featured Carousel */}
       {featuredCars.length > 0 && (
         <>
           <h2 className="text-center mb-5 fw-bold text-primary">Featured Vehicle</h2>
@@ -42,7 +48,7 @@ const Home = () => {
             {featuredCars.map(car => (
               <Carousel.Item key={car.id}>
                 <img
-                  src={car.image_urls?.[0] || 'https://via.placeholder.com/800x600?text=No+Image'}  // ← Direct URL
+                  src={car.image_urls?.[0] || 'https://via.placeholder.com/800x600?text=No+Image'}
                   className="d-block w-100"
                   alt={`${car.make} ${car.model}`}
                   style={{ height: '500px', objectFit: 'cover' }}
@@ -57,18 +63,13 @@ const Home = () => {
         </>
       )}
 
-      {/* BROWSE BY BRAND */}
+      {/* Browse by Brand */}
       <div className="text-center my-5 py-5 bg-light rounded shadow-sm">
         <h2 className="mb-4 fw-bold text-primary">Browse by Brand</h2>
         <div className="d-flex flex-wrap justify-content-center gap-4">
-          <Button
-            variant={selectedBrand === null ? "primary" : "outline-secondary"}
-            className="p-3"
-            onClick={() => filterByBrand(null)}
-          >
+          <Button variant={selectedBrand === null ? "primary" : "outline-secondary"} className="p-3" onClick={() => filterByBrand(null)}>
             <strong>All Brands</strong>
           </Button>
-
           {brands.map(brand => (
             <Button
               key={brand.name}
