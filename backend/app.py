@@ -9,17 +9,23 @@ from email.mime.text import MIMEText
 
 app = Flask(__name__)
 
-# === FIX CORS PROPERLY ===
+# FIXED CORS — ALLOWS YOUR LIVE SITE + LOCALHOST
 CORS(app, resources={
     r"/*": {
-        "origins": ["https://car-website-wine.vercel.app", "http://localhost:3000"],
+        "origins": [
+            "https://car-website-wine.vercel.app",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000"
+        ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
 
-# === REST OF YOUR CODE (unchanged) ===
+# Base URL for images
 BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:5000')
+
+# Database & Uploads
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "cars.db"
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
@@ -33,41 +39,130 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+# Serve images
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# Helper: Full image URLs
 def get_full_image_urls(image_urls_str):
     if not image_urls_str:
         return []
     urls = image_urls_str.split(',')
     return [f"{BASE_URL}{url}" for url in urls if url.strip()]
 
+# GET ALL CARS
 @app.get("/cars")
 def get_cars():
     cars = Car.query.all()
     return jsonify([{
-        'id': c.id, 'make': c.make, 'model': c.model, 'year': c.year,
-        'price': c.price, 'mileage': c.mileage, 'condition': c.condition,
-        'transmission': c.transmission, 'fuel_type': c.fuel_type,
-        'description': c.description, 'image_urls': get_full_image_urls(c.image_urls),
-        'is_featured': c.is_featured, 'is_sold': c.is_sold
+        'id': c.id,
+        'make': c.make,
+        'model': c.model,
+        'year': c.year,
+        'price': c.price,
+        'mileage': c.mileage,
+        'condition': c.condition,
+        'transmission': c.transmission,
+        'fuel_type': c.fuel_type,
+        'description': c.description,
+        'image_urls': get_full_image_urls(c.image_urls),
+        'is_featured': c.is_featured,
+        'is_sold': c.is_sold
     } for c in cars])
 
+# GET SINGLE CAR
 @app.get("/cars/<int:id>")
 def get_car(id):
     car = Car.query.get_or_404(id)
     return jsonify({
-        'id': car.id, 'make': car.make, 'model': car.model, 'year': car.year,
-        'price': car.price, 'mileage': car.mileage, 'condition': car.condition,
-        'transmission': car.transmission, 'fuel_type': car.fuel_type,
-        'description': car.description, 'image_urls': get_full_image_urls(car.image_urls),
-        'is_featured': car.is_featured, 'is_sold': car.is_sold
+        'id': car.id,
+        'make': car.make,
+        'model': car.model,
+        'year': car.year,
+        'price': car.price,
+        'mileage': car.mileage,
+        'condition': car.condition,
+        'transmission': car.transmission,
+        'fuel_type': car.fuel_type,
+        'description': car.description,
+        'image_urls': get_full_image_urls(car.image_urls),
+        'is_featured': car.is_featured,
+        'is_sold': car.is_sold
     })
 
-# === ADMIN ROUTES (add, update, delete) ===
-# (keep your existing code — just make sure they exist)
+# Image upload helper
+def save_images(files):
+    urls = []
+    for file in files:
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            urls.append(f"/uploads/{filename}")
+    return ",".join(urls) if urls else None
 
+# ADD CAR (Admin)
+@app.post("/cars")
+def add_car():
+    data = request.form
+    files = request.files.getlist('images[]')
+    image_urls = save_images(files)
+
+    new_car = Car(
+        make=data['make'],
+        model=data['model'],
+        year=int(data['year']),
+        price=float(data['price']),
+        mileage=int(data.get('mileage', 0)),
+        condition=data.get('condition', 'Used'),
+        transmission=data.get('transmission', 'Automatic'),
+        fuel_type=data.get('fuel_type', 'Petrol'),
+        description=data.get('description', ''),
+        is_featured=data.get('is_featured') == 'true',
+        is_sold=data.get('is_sold') == 'true',
+        image_urls=image_urls
+    )
+    db.session.add(new_car)
+    db.session.commit()
+    return jsonify({"message": "Car added successfully", "id": new_car.id}), 201
+
+# UPDATE CAR (Admin)
+@app.put("/cars/<int:id>")
+def update_car(id):
+    car = Car.query.get_or_404(id)
+    data = request.form
+    files = request.files.getlist('images[]')
+
+    current_urls = car.image_urls.split(',') if car.image_urls else []
+    new_urls = save_images(files).split(',') if files and save_images(files) else []
+    all_urls = ','.join([u for u in current_urls + new_urls if u.strip()])
+
+    car.make = data.get('make', car.make)
+    car.model = data.get('model', car.model)
+    car.year = int(data.get('year', car.year))
+    car.price = float(data.get('price', car.price))
+    car.mileage = int(data.get('mileage', car.mileage))
+    car.condition = data.get('condition', car.condition)
+    car.transmission = data.get('transmission', car.transmission)
+    car.fuel_type = data.get('fuel_type', car.fuel_type)
+    car.description = data.get('description', car.description)
+    car.is_featured = data.get('is_featured') == 'true'
+    car.is_sold = data.get('is_sold') == 'true'
+    if all_urls:
+        car.image_urls = all_urls
+
+    db.session.commit()
+    return jsonify({"message": "Car updated successfully"})
+
+# DELETE CAR (Admin)
+@app.delete("/cars/<int:id>")
+def delete_car(id):
+    car = Car.query.get_or_404(id)
+    db.session.delete(car)
+    db.session.commit()
+    return jsonify({"message": "Car deleted successfully"})
+
+# CONTACT FORM — NOW WORKS 100%
 @app.post("/send-inquiry")
 def send_inquiry():
     data = request.get_json()
@@ -77,20 +172,24 @@ def send_inquiry():
     password = os.environ.get("GMAIL_APP_PASSWORD")
 
     if not email or not password:
-        print("GMAIL_USER or GMAIL_APP_PASSWORD missing!")
+        print("GMAIL_USER or GMAIL_APP_PASSWORD not set!")
         return jsonify({"error": "Email not configured"}), 500
 
     msg = MIMEMultipart()
     msg['From'] = email
     msg['To'] = email
-    msg['Subject'] = f"NEW INQUIRY from {data.get('name', 'Unknown')}"
+    msg['Subject'] = f"NEW INQUIRY: {data.get('name', 'Customer')} - {data.get('phone', '')}"
 
     body = f"""
-    Name: {data.get('name')}
-    Phone: {data.get('phone')}
-    Email: {data.get('email')}
-    Car: {data.get('car_interest')}
-    Message: {data.get('message')}
+    NEW CUSTOMER INQUIRY!
+
+    Name         : {data.get('name', 'Not provided')}
+    Phone        : {data.get('phone', 'Not provided')}
+    Email        : {data.get('email', 'Not provided')}
+    Interested in: {data.get('car_interest', 'Not specified')}
+    Message      : {data.get('message', 'None')}
+
+    CALL THEM NOW: {data.get('phone', 'No phone')}
     """
     msg.attach(MIMEText(body, 'plain'))
 
@@ -101,11 +200,13 @@ def send_inquiry():
         server.sendmail(email, email, msg.as_string())
         server.quit()
         print("EMAIL SENT SUCCESSFULLY!")
-        return jsonify({"message": "Sent!"}), 200
+        return jsonify({"message": "Inquiry sent! We’ll call you soon."}), 200
     except Exception as e:
-        print("EMAIL FAILED:", str(e))
-        return jsonify({"error": str(e)}), 500
+        error = str(e)
+        print("EMAIL FAILED:", error)
+        return jsonify({"error": "Failed to send inquiry"}), 500
 
+# Run server
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
