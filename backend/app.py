@@ -10,10 +10,10 @@ from email.mime.multipart import MIMEMultipart
 app = Flask(__name__)
 CORS(app)
 
-# === AUTOMATIC BASE URL (works locally + Render) ===
+# AUTOMATIC BASE URL
 BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:5000')
 
-# === Database setup ===
+# Database setup
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "cars.db"
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
@@ -27,19 +27,17 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-# === Serve uploaded images ===
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# === Helper: Return full image URLs ===
 def get_full_image_urls(image_urls_str):
     if not image_urls_str:
         return []
     urls = image_urls_str.split(',')
     return [f"{BASE_URL}{url}" for url in urls if url.strip()]
 
-# === CAR ENDPOINTS ===
+# CAR ENDPOINTS
 @app.get("/cars")
 def get_cars():
     cars = Car.query.all()
@@ -78,7 +76,7 @@ def get_car(id):
         'is_sold': car.is_sold
     })
 
-# === Image upload helper ===
+# Image helper
 def save_images(files):
     urls = []
     for file in files:
@@ -88,7 +86,7 @@ def save_images(files):
             urls.append(f"/uploads/{filename}")
     return ",".join(urls) if urls else None
 
-# === ADD CAR (Admin) ===
+# ADMIN ROUTES
 @app.post("/cars")
 def add_car():
     data = request.form
@@ -113,7 +111,6 @@ def add_car():
     db.session.commit()
     return jsonify({"message": "Car added", "id": new_car.id}), 201
 
-# === UPDATE CAR ===
 @app.put("/cars/<int:id>")
 def update_car(id):
     car = Car.query.get_or_404(id)
@@ -121,8 +118,8 @@ def update_car(id):
     files = request.files.getlist('images[]')
 
     current_urls = car.image_urls.split(',') if car.image_urls else []
-    new_urls = save_images(files).split(',') if files else []
-    all_urls = ','.join([url for url in current_urls + new_urls if url])
+    new_urls = save_images(files).split(',') if files and save_images(files) else []
+    all_urls = ','.join([u for u in current_urls + new_urls if u.strip()])
 
     car.make = data.get('make', car.make)
     car.model = data.get('model', car.model)
@@ -141,7 +138,6 @@ def update_car(id):
     db.session.commit()
     return jsonify({"message": "Car updated"})
 
-# === DELETE CAR ===
 @app.delete("/cars/<int:id>")
 def delete_car(id):
     car = Car.query.get_or_404(id)
@@ -149,60 +145,55 @@ def delete_car(id):
     db.session.commit()
     return jsonify({"message": "Car deleted"})
 
-# === CONTACT FORM — NOW 100% WORKING WITH ENV VARS ===
+# CONTACT FORM — NOW WITH FULL DEBUGGING
 @app.post("/send-inquiry")
 def send_inquiry():
     data = request.get_json()
+    print("Received inquiry data:", data)  # ← Will show in logs
+
     if not data:
-        return jsonify({"error": "No data received"}), 400
+        return jsonify({"error": "No data"}), 400
 
-    # Secure: Read from environment variables
-    YOUR_EMAIL = os.environ.get("GMAIL_USER")
-    YOUR_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
+    # READ ENV VARS
+    email = os.environ.get("GMAIL_USER")
+    password = os.environ.get("GMAIL_APP_PASSWORD")
 
-    if not YOUR_EMAIL or not YOUR_PASSWORD:
-        print("ERROR: Gmail credentials not set in environment variables")
-        return jsonify({"error": "Email service not configured"}), 500
+    # DEBUG: Show exactly what we got
+    print(f"GMAIL_USER = {email}")
+    print(f"GMAIL_APP_PASSWORD length = {len(password) if password else 'MISSING'}")
 
-    subject = f"NEW CAR INQUIRY from {data.get('name', 'Unknown')}"
+    if not email:
+        print("ERROR: GMAIL_USER is not set!")
+        return jsonify({"error": "Email not configured"}), 500
+    if not password:
+        print("ERROR: GMAIL_APP_PASSWORD is not set or empty!")
+        return jsonify({"error": "Password missing"}), 500
 
-    body = f"""
-    NEW CUSTOMER INQUIRY JUST CAME IN!
-
-    Name           : {data.get('name', 'Not provided')}
-    Phone          : {data.get('phone', 'Not provided')}
-    Email          : {data.get('email', 'Not provided')}
-    Interested in  : {data.get('car_interest', 'Not specified')}
-
-    Message:
-    {data.get('message', 'No message')}
-
-    CALL THEM NOW → {data.get('phone', 'No phone')}
-    """
+    subject = f"INQUIRY: {data.get('name', 'No Name')} - {data.get('phone', 'No Phone')}"
+    body = f"Name: {data.get('name')}\nPhone: {data.get('phone')}\nEmail: {data.get('email')}\nCar: {data.get('car_interest')}\nMessage: {data.get('message')}"
 
     msg = MIMEMultipart()
-    msg['From'] = YOUR_EMAIL
-    msg['To'] = YOUR_EMAIL
+    msg['From'] = email
+    msg['To'] = email
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain'))
 
     try:
+        print("Connecting to Gmail...")
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login(YOUR_EMAIL, YOUR_PASSWORD)
-        server.sendmail(YOUR_EMAIL, YOUR_EMAIL, msg.as_string())
+        print("Logging in...")
+        server.login(email, password)
+        print("Sending email...")
+        server.sendmail(email, email, msg.as_string())
         server.quit()
-        print(f"SUCCESS: Inquiry email sent → {data.get('name')} ({data.get('phone')})")
-        return jsonify({"message": "Inquiry sent successfully"}), 200
-
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"GMAIL AUTH FAILED: {e}")
-        return jsonify({"error": "Gmail login failed"}), 500
+        print("SUCCESS: EMAIL SENT!")
+        return jsonify({"message": "Sent!"}), 200
     except Exception as e:
-        print(f"EMAIL SEND ERROR: {e}")
-        return jsonify({"error": "Failed to send email"}), 500
+        error = str(e)
+        print(f"EMAIL FAILED: {error}")
+        return jsonify({"error": error}), 500
 
-# === Run server ===
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
