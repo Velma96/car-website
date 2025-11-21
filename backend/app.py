@@ -160,5 +160,7 @@ def send_inquiry():
         print("Email failed:", e)
         return jsonify({"error": "Failed to send email"}), 500
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    # Render gives us a PORT environment variable
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
