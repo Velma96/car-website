@@ -8,37 +8,53 @@ import Admin from './pages/Admin';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css'; // We'll create this next
+import './App.css';
 
 function App() {
   return (
     <Router>
       <div className="App">
-        {/* Premium Navbar with Logo */}
-        <Navbar expand="lg" className="navbar-custom shadow-sm">
+
+        {/* PREMIUM NAVBAR WITH VELMA LOGO */}
+        <Navbar expand="lg" className="navbar-custom shadow-lg" sticky="top">
           <Container>
-          <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
-  <img
-    src="https://i.imgur.com/8vN9KjF.png"
-    alt="Velma Car Yard Logo"
-    height="50"
-    className="me-3"
-  />
-  <span className="brand-text fw-bold">Velma Car Yard</span>
-</Navbar.Brand>
+            <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
+              <img
+                src="/velma.png"                     // ← This works perfectly from public folder
+                alt="Velma Car Yard Logo"
+                height="55"
+                width="55"
+                className="me-3 rounded-circle shadow-sm logo-img"
+                style={{ objectFit: 'cover', border: '3px solid #0066cc' }}
+              />
+              <div>
+                <span className="brand-title fw-bold d-block">Velma Car Yard</span>
+                <small className="text-muted fw-medium">Premium Cars • Nairobi</small>
+              </div>
+            </Navbar.Brand>
+
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
+
             <Navbar.Collapse id="basic-navbar-nav">
-              <Nav className="ms-auto fw-semibold">
-                <Nav.Link as={Link} to="/" className="text-white mx-2">Home</Nav.Link>
-                <Nav.Link as={Link} to="/about" className="text-white mx-2">About</Nav.Link>
-                <Nav.Link as={Link} to="/contact" className="text-white mx-2">Contact</Nav.Link>
-                <Nav.Link as={Link} to="/admin" className="text-primary mx-2">Admin</Nav.Link>
+              <Nav className="ms-auto align-items-center fw-semibold">
+                <Nav.Link as={Link} to="/" className="nav-link-custom mx-2">Home</Nav.Link>
+                <Nav.Link as={Link} to="/about" className="nav-link-custom mx-2">About</Nav.Link>
+                <Nav.Link as={Link} to="/contact" className="nav-link-custom mx-2">Contact</Nav.Link>
+                <Nav.Link as={Link} to="/admin" className="nav-link-admin mx-2">Admin</Nav.Link>
+
+                {/* Call/WhatsApp Button */}
+                <Nav.Link
+                  href="tel:+254700123456"
+                  className="btn btn-success text-white px-4 py-2 rounded-pill ms-4 d-none d-lg-inline-block shadow"
+                >
+                  Call/WhatsApp
+                </Nav.Link>
               </Nav>
             </Navbar.Collapse>
           </Container>
         </Navbar>
 
-        {/* Page Content */}
+        {/* Routes */}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/car/:id" element={<CarDetails />} />
@@ -47,16 +63,16 @@ function App() {
           <Route path="/admin" element={<Admin />} />
         </Routes>
 
-        {/* Premium Footer */}
-        <footer className="footer-custom py-4 mt-5">
+        {/* Footer */}
+        <footer className="footer-custom py-5 mt-auto">
           <Container className="text-center text-white">
-            <p className="mb-1">
-              <strong>Velma Car Yard</strong> • Nairobi, Kenya
+            <p className="mb-1 fw-bold fs-5">Velma Car Yard • Nairobi, Kenya</p>
+            <p className="mb-2">
+              Call/WhatsApp: <strong className="fs-4">+254 700 123 456</strong>
             </p>
-            <p className="mb-0">
-              Call/WhatsApp: <strong>+254 700 123 456</strong> • Open Daily 8AM–6PM
+            <p className="mb-0 text-white-50">
+              © 2025 Velma Car Yard • Open Daily 8AM–6PM
             </p>
-            <small className="text-white-50">© 2025 Velma Car Yard. All rights reserved.</small>
           </Container>
         </footer>
       </div>
@@ -65,4 +81,3 @@ function App() {
 }
 
 export default App;
-

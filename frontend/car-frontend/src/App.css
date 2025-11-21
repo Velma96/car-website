@@ -1,105 +1,109 @@
-/* src/App.css - Clean Light Grey Professional Theme */
+/* src/App.css - Premium Professional Theme */
 .App {
   min-height: 100vh;
-  background: #f5f7fa;
-  color: #333;
+  background: #f8f9fc;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Navbar - White with elegant blue/gold accent */
+/* NAVBAR */
 .navbar-custom {
   background: white !important;
   padding: 1rem 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  border-bottom: 4px solid #0066cc;
+  border-bottom: 5px solid #0066cc;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
-.brand-text {
-  font-size: 1.8rem;
-  color: #0066cc !important;
-  font-weight: 800;
+.logo-img {
+  transition: all 0.3s ease;
+  object-fit: cover;
 }
 
-.navbar-custom .nav-link {
+.logo-img:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 10px 20px rgba(0, 102, 204, 0.3) !important;
+}
+
+.brand-title {
+  font-size: 1.9rem;
+  color: #0066cc;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.nav-link-custom {
   color: #333 !important;
+  padding: 0.6rem 1.2rem !important;
+  border-radius: 50px;
+  transition: all 0.3s ease;
   font-weight: 600;
-  padding: 0.5rem 1rem !important;
-  border-radius: 8px;
-  transition: all 0.3s;
 }
 
-.navbar-custom .nav-link:hover {
+.nav-link-custom:hover,
+.nav-link-custom.active {
   background: #0066cc;
   color: white !important;
+  transform: translateY(-2px);
 }
 
-/* Footer */
+.nav-link-admin {
+  color: #dc3545 !important;
+  font-weight: bold;
+}
+
+/* FOOTER */
 .footer-custom {
   background: #1a1a1a;
   color: white;
-  border-top: 4px solid #0066cc;
+  border-top: 5px solid #0066cc;
+  margin-top: auto;
 }
 
-/* Cards - Clean white with soft shadow */
+/* CARDS */
 .card {
   background: white !important;
   border: none !important;
-  border-radius: 12px !important;
+  border-radius: 16px !important;
   overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
-  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+  transition: all 0.4s ease;
 }
 
 .card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0,102,204,0.2) !important;
+  transform: translateY(-12px);
+  box-shadow: 0 25px 50px rgba(0, 102, 204, 0.2) !important;
 }
 
-/* Buttons */
+/* BUTTONS */
 .btn-success,
 .btn-primary {
   background: #0066cc !important;
   border: none !important;
   font-weight: bold;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  padding: 0.8rem 2rem;
+  transition: all 0.3s ease;
 }
 
 .btn-success:hover,
 .btn-primary:hover {
   background: #0052a3 !important;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 102, 204, 0.3) !important;
 }
 
-/* Gold accents for price & badges */
-.text-gold {
-  color: #e6b800 !important;
-  font-weight: bold;
-}
-
-.bg-gold {
-  background: #e6b800 !important;
-  color: #000 !important;
-}
-
-/* SOLD badge */
-.badge.bg-danger {
-  font-size: 1.1rem !important;
-  padding: 0.8em 1.2em;
-}
-
-/* Featured badge */
-.badge.bg-warning {
-  background: #e6b800 !important;
-  color: #000 !important;
-}
+/* Brand buttons hover */
 .brand-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 10px 20px rgba(0,102,204,0.3) !important;
-}
-.brand-btn img {
-  transition: transform 0.3s ease;
+  transform: scale(1.12) !important;
+  box-shadow: 0 15px 30px rgba(0, 102, 204, 0.3) !important;
 }
 
-.brand-btn:hover img {
-  transform: scale(1.2);
+.brand-btn img,
+.brand-btn svg {
+  transition: transform 0.4s ease;
+}
+
+.brand-btn:hover img,
+.brand-btn:hover svg {
+  transform: scale(1.25);
 }
