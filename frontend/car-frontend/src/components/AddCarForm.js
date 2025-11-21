@@ -48,7 +48,7 @@ const AddCarForm = ({ onAdd }) => {
       }
     }
 
-    axios.post('http://velma-backend.onrender.com/cars', data)
+    axios.post('https://velma-backend.onrender.com/cars', data)
       .then(() => {
         onAdd();
         setFormData({
