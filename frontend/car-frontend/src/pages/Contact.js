@@ -18,10 +18,12 @@ const Contact = () => {
 
   const [status, setStatus] = useState(null);
 
-  // Use environment variable — works locally AND on live site
-  const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+  // FINAL & CORRECT WAY — WORKS LOCALLY + LIVE
+  const API_URL = process.env.REACT_APP_API_URL 
+    ? process.env.REACT_APP_API_URL.replace(/\/$/, '')  // Remove trailing slash if exists
+    : 'https://velma-backend.onrender.com';           // LIVE URL (HTTPS!)
 
-  // Auto-fill car name — safe & clean
+  // Auto-fill car name
   useEffect(() => {
     if (prefilledCar && !formData.car_interest) {
       setFormData(prev => ({ ...prev, car_interest: prefilledCar }));
@@ -37,17 +39,19 @@ const Contact = () => {
     setStatus('sending');
 
     try {
-      await axios.post(`${API_URL}/send-inquiry`, formData);
+      await axios.post(`${API_URL}/send-inquiry`, formData, {
+        headers: { 'Content-Type': 'application/json' }
+      });
       setStatus('success');
       setFormData({
         name: '',
         phone: '',
         email: '',
-        car_interest: prefilledCar, // Keep the car name after success
+        car_interest: prefilledCar,
         message: ''
       });
     } catch (err) {
-      console.error("Inquiry failed:", err);
+      console.error("Inquiry failed:", err.response || err);
       setStatus('error');
     }
   };
