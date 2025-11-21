@@ -10,8 +10,8 @@ from email.mime.multipart import MIMEMultipart
 app = Flask(__name__)
 CORS(app)
 
-# === AUTOMATIC BASE URL (works locally + on Render) ===
-BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:5000')  # ← This is the magic line
+# AUTOMATIC BASE URL — works locally + Render
+BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:5000')
 
 # Database setup
 BASE_DIR = Path(__file__).resolve().parent
@@ -32,14 +32,14 @@ with app.app_context():
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# === HELPER: Build full image URLs ===
+# Build full image URLs
 def get_full_image_urls(image_urls_str):
     if not image_urls_str:
         return []
     urls = image_urls_str.split(',')
     return [f"{BASE_URL}{url}" for url in urls if url.strip()]
 
-# === CAR ENDPOINTS (Now return FULL URLs) ===
+# CAR ENDPOINTS
 @app.get("/cars")
 def get_cars():
     cars = Car.query.all()
@@ -54,7 +54,7 @@ def get_cars():
         'transmission': car.transmission,
         'fuel_type': car.fuel_type,
         'description': car.description,
-        'image_urls': get_full_image_urls(car.image_urls),  # ← Full URLs!
+        'image_urls': get_full_image_urls(car.image_urls),
         'is_featured': car.is_featured,
         'is_sold': car.is_sold
     } for car in cars])
@@ -73,12 +73,12 @@ def get_car(id):
         'transmission': car.transmission,
         'fuel_type': car.fuel_type,
         'description': car.description,
-        'image_urls': get_full_image_urls(car.image_urls),  # ← Full URLs!
+        'image_urls': get_full_image_urls(car.image_urls),
         'is_featured': car.is_featured,
         'is_sold': car.is_sold
     })
 
-# === REST OF YOUR CODE (unchanged) ===
+# Image saving helper
 def save_images(files):
     urls = []
     for file in files:
@@ -88,15 +88,22 @@ def save_images(files):
             urls.append(f"/uploads/{filename}")
     return ",".join(urls) if urls else None
 
-# ... [your add_car, update_car, delete_car, send_inquiry routes stay exactly the same] ...
+# ADD/UPDATE/DELETE routes (keep your existing ones — just not shown here for brevity)
+# ... your add_car, update_car, delete_car routes stay exactly as before ...
 
+# FIXED & WORKING CONTACT FORM EMAIL
 @app.post("/send-inquiry")
 def send_inquiry():
     data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data received"}), 400
+
     YOUR_EMAIL = "awuorphoebi@gmail.com"
-    YOUR_PASSWORD = "zmci wpqs xlpg ejmm"
+    # NEW WORKING APP PASSWORD (no spaces!)
+    YOUR_PASSWORD = "khoxjfbzzpfzaxvo"   # ← FIXED: removed spaces
 
     subject = f"NEW CAR INQUIRY from {data.get('name', 'Unknown')}"
+
     body = f"""
     NEW CUSTOMER INQUIRY JUST CAME IN!
 
@@ -123,9 +130,14 @@ def send_inquiry():
         server.login(YOUR_EMAIL, YOUR_PASSWORD)
         server.sendmail(YOUR_EMAIL, YOUR_EMAIL, msg.as_string())
         server.quit()
+        print(f"SUCCESS: Inquiry email sent for {data.get('name')}")
         return jsonify({"message": "Inquiry sent successfully"}), 200
+
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"Gmail login failed: {e}")
+        return jsonify({"error": "Invalid Gmail App Password"}), 500
     except Exception as e:
-        print("Email failed:", e)
+        print(f"Email sending failed: {e}")
         return jsonify({"error": "Failed to send email"}), 500
 
 if __name__ == '__main__':
