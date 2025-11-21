@@ -23,7 +23,7 @@ const Admin = () => {
   }, [authenticated]);
 
   const fetchCars = () => {
-    axios.get('http://127.0.0.1:5000/cars')
+    axios.get('http://velma-backend.onrender.com/cars')
       .then(res => setCars(res.data))
       .catch(err => console.error(err));
   };
@@ -40,7 +40,7 @@ const Admin = () => {
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this car?')) {
-      axios.delete(`http://127.0.0.1:5000/cars/${id}`)
+      axios.delete(`http://velma-backend.onrender.com/cars/${id}`)
         .then(() => fetchCars())
         .catch(() => alert('Delete failed'));
     }

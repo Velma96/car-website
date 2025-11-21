@@ -25,10 +25,13 @@ const CarCard = ({ car }) => {
         {images.map((url, i) => (
           <Carousel.Item key={i}>
             <img 
-              src={`http://127.0.0.1:5000${url}`} 
+              src={url}  // ← Direct full URL from backend
               className="d-block w-100" 
-              alt={`${car.make} ${i}`}
+              alt={`${car.make} ${car.model} ${i + 1}`}
               style={{ height: '200px', objectFit: 'cover' }}
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Found';
+              }}
             />
           </Carousel.Item>
         ))}
@@ -44,7 +47,7 @@ const CarCard = ({ car }) => {
           <Button variant="primary" className="w-100">View Details</Button>
         </Link>
       </Card.Body>
-    |</Card>
+    </Card>
   );
 };
 

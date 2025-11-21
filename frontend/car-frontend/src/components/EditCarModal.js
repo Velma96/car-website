@@ -68,7 +68,7 @@ const EditCarModal = ({ show, onHide, car, onUpdated }) => {
     }
 
     try {
-      await axios.put(`http://127.0.0.1:5000/cars/${car.id}`, data);
+      await axios.put(`http://velma-backend.onrender.com/cars/${car.id}`, data);
       onUpdated();
       onHide();
     } catch (err) {

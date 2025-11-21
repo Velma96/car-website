@@ -34,7 +34,7 @@ const Contact = () => {
     setStatus('sending');
 
     try {
-      await axios.post('http://127.0.0.1:5000/send-inquiry', formData);
+      await axios.post('http://velma-backend.onrender.com/send-inquiry', formData);
       setStatus('success');
       setFormData({
         name: '',

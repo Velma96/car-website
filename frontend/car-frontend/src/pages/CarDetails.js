@@ -11,7 +11,7 @@ const CarDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`http://127.0.0.1:5000/cars/${id}`)
+    axios.get(`https://velma-backend.onrender.com/cars/${id}`)  // ← Update to your Render URL
       .then(res => {
         setCar(res.data);
         setLoading(false);
@@ -34,7 +34,6 @@ const CarDetails = () => {
   return (
     <Container className="my-5">
       <Row>
-        {/* Image Gallery */}
         <Col lg={7} className="mb-4 mb-lg-0">
           <div className="position-relative">
             {car.is_sold && (
@@ -52,10 +51,11 @@ const CarDetails = () => {
               {images.map((url, index) => (
                 <Carousel.Item key={index}>
                   <img
-                    src={`http://127.0.0.1:5000${url}`}
+                    src={url}  // ← Direct full URL
                     className="d-block w-100 rounded"
                     alt={`${car.make} ${car.model} ${index + 1}`}
                     style={{ height: '500px', objectFit: 'cover' }}
+                    onError={(e) => e.target.src = 'https://via.placeholder.com/800x600?text=Image+Missing'}
                   />
                 </Carousel.Item>
               ))}
@@ -66,7 +66,7 @@ const CarDetails = () => {
                 {images.map((url, index) => (
                   <div className="col-3 col-md-2" key={index}>
                     <img
-                      src={`http://127.0.0.1:5000${url}`}
+                      src={url}  // ← Direct full URL
                       className="img-fluid rounded cursor-pointer border"
                       alt={`Thumbnail ${index + 1}`}
                       style={{ height: '80px', objectFit: 'cover' }}
@@ -79,7 +79,6 @@ const CarDetails = () => {
           </div>
         </Col>
 
-        {/* Car Info */}
         <Col lg={5}>
           <div className="ps-lg-4">
             <h1 className="display-5 fw-bold">
