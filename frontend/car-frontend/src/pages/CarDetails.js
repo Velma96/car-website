@@ -84,8 +84,8 @@ const CarDetails = () => {
             )}
 
             <div className="d-grid gap-3">
-              <Button size="lg" variant="success" className="fw-bold" onClick={() => window.location.href = 'tel:+254700123456'}>
-                Call / WhatsApp: +254 700 123 456
+              <Button size="lg" variant="success" className="fw-bold" onClick={() => window.location.href = 'tel:+254720789084'}>
+                Call / WhatsApp: +254 720 789 084
               </Button>
               <Button size="lg" variant="primary" className="fw-bold" onClick={() => navigate('/contact', { state: { carInterest: carName } })}>
                 Send Inquiry – We’ll Call You in 10 Minutes!

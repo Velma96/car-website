@@ -106,7 +106,7 @@ const About = () => {
 
           <div className="text-center mt-5">
             <p className="text-muted">
-              For inquiries: <strong>+254 700 123 456</strong> • 
+              For inquiries: <strong>+254 720 789 084</strong> • 
               Email: <strong>sales@velmacaryard.co.ke</strong>
             </p>
             <small className="text-muted">

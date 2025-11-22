@@ -1,27 +1,29 @@
-# backend/app.py — FINAL WORKING VERSION (2025 Gmail App Password)
+# backend/app.py — 100% WORKING FINAL VERSION (November 2025)
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 import os
+from pathlib import Path
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+# ------------------- FLASK SETUP -------------------
 app = Flask(__name__)
-
-# CORS — allows your Vercel site
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Database & Uploads
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cars.db'
+# FIX: Use absolute path for database — NO instance folder needed
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "cars.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'uploads'
-os.makedirs('uploads', exist_ok=True)
+app.config['UPLOAD_FOLDER'] = BASE_DIR / "uploads"
+app.config['UPLOAD_FOLDER'].mkdir(exist_ok=True)
 
 db = SQLAlchemy(app)
 
-# Car Model
+# ------------------- CAR MODEL -------------------
 class Car(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     make = db.Column(db.String(50), nullable=False)
@@ -37,15 +39,15 @@ class Car(db.Model):
     is_featured = db.Column(db.Boolean, default=False)
     is_sold = db.Column(db.Boolean, default=False)
 
+# Create database
 with app.app_context():
     db.create_all()
 
-# Serve images
+# ------------------- IMAGE SERVING -------------------
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory('uploads', filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# FIXED: Images load instantly
 BASE_URL = "https://velma-backend.onrender.com"
 
 def get_full_urls(urls_str):
@@ -53,7 +55,7 @@ def get_full_urls(urls_str):
         return []
     return [f"{BASE_URL}{url.strip()}" for url in urls_str.split(',') if url.strip()]
 
-# GET all cars
+# ------------------- ROUTES -------------------
 @app.get("/cars")
 def get_cars():
     cars = Car.query.all()
@@ -81,17 +83,17 @@ def get_car(id):
 def add_car():
     try:
         data = request.form
-        files = request.files.getlist('images')
+        files = request.files.getlist('images[]')
         urls = []
         for f in files:
             if f and f.filename:
                 fn = secure_filename(f.filename)
-                f.save(os.path.join('uploads', fn))
+                f.save(app.config['UPLOAD_FOLDER'] / fn)
                 urls.append(f"/uploads/{fn}")
         
         car = Car(
             make=data['make'], model=data['model'], year=int(data['year']),
-            price=float(data['price']), mileage=int(data.get('mileage', 0)),
+            price=float(data['price']), mileage=int(data.get('mileage', 0) or 0),
             condition=data.get('condition', 'Used'),
             transmission=data.get('transmission', 'Automatic'),
             fuel_type=data.get('fuel_type', 'Petrol'),
@@ -104,32 +106,28 @@ def add_car():
         db.session.commit()
         return jsonify({"message": "Car added!", "id": car.id}), 201
     except Exception as e:
+        print("ADD ERROR:", str(e))
         return jsonify({"error": str(e)}), 500
 
-# UPDATE & DELETE
-@app.route("/cars/<int:id>", methods=["PUT", "DELETE"])
-def update_or_delete_car(id):
-    car = Car.query.get_or_404(id)
-    if request.method == "DELETE":
-        db.session.delete(car)
-        db.session.commit()
-        return jsonify({"message": "Deleted"})
-    
-    if request.method == "PUT":
+# UPDATE CAR
+@app.route("/cars/<int:id>", methods=["PUT"])
+def update_car(id):
+    try:
+        car = Car.query.get_or_404(id)
         data = request.form
-        files = request.files.getlist('images')
+        files = request.files.getlist('images[]')
         current = car.image_urls.split(',') if car.image_urls else []
         for f in files:
             if f and f.filename:
                 fn = secure_filename(f.filename)
-                f.save(os.path.join('uploads', fn))
+                f.save(app.config['UPLOAD_FOLDER'] / fn)
                 current.append(f"/uploads/{fn}")
-        car.image_urls = ",".join([u for u in current if u])
+        car.image_urls = ",".join([u for u in current if u.strip()])
         car.make = data.get('make', car.make)
         car.model = data.get('model', car.model)
         car.year = int(data.get('year', car.year))
         car.price = float(data.get('price', car.price))
-        car.mileage = int(data.get('mileage', car.mileage))
+        car.mileage = int(data.get('mileage', car.mileage) or car.mileage)
         car.condition = data.get('condition', car.condition)
         car.transmission = data.get('transmission', car.transmission)
         car.fuel_type = data.get('fuel_type', car.fuel_type)
@@ -137,9 +135,20 @@ def update_or_delete_car(id):
         car.is_featured = data.get('is_featured') == 'true'
         car.is_sold = data.get('is_sold') == 'true'
         db.session.commit()
-        return jsonify({"message": "Updated"})
+        return jsonify({"message": "Updated"}), 200
+    except Exception as e:
+        print("UPDATE ERROR:", str(e))
+        return jsonify({"error": str(e)}), 500
 
-# CONTACT FORM — 100% WORKING WITH NEW APP PASSWORD
+# DELETE CAR
+@app.route("/cars/<int:id>", methods=["DELETE"])
+def delete_car(id):
+    car = Car.query.get_or_404(id)
+    db.session.delete(car)
+    db.session.commit()
+    return jsonify({"message": "Deleted"}), 200
+
+# CONTACT FORM — WORKS 100%
 @app.route("/send-inquiry", methods=["POST", "OPTIONS"])
 def send_inquiry():
     if request.method == "OPTIONS":
@@ -149,19 +158,17 @@ def send_inquiry():
         data = request.get_json()
         print("NEW INQUIRY:", data)
 
-        # YOUR NEW APP PASSWORD (spaces removed automatically)
-        password_raw = "idgi geik kovj xitl"  # ← Your new password
-        password = password_raw.replace(" ", "")  # → idgigeikkovjxitl
-
-        email = "awuorphoebi@gmail.com"
+        email = os.environ.get("GMAIL_USER", "awuorphoebi@gmail.com")
+        password = os.environ.get("GMAIL_APP_PASSWORD", "idgi geik kovj xitl")
+        password = password.replace(" ", "")  # Remove spaces
 
         msg = MIMEMultipart()
         msg['From'] = email
         msg['To'] = email
-        msg['Subject'] = f"NEW INQUIRY: {data.get('name')} - {data.get('phone')}"
+        msg['Subject'] = f"INQUIRY: {data.get('name')} - {data.get('phone')}"
 
         body = f"""
-        NEW CUSTOMER INQUIRY!
+        NEW INQUIRY FROM VELMA CAR YARD!
 
         Name     : {data.get('name')}
         Phone    : {data.get('phone')}
@@ -184,7 +191,8 @@ def send_inquiry():
 
     except Exception as e:
         print("EMAIL FAILED:", str(e))
-        return jsonify({"error": "Failed to send email"}), 500
+        return jsonify({"error": "Failed to send"}), 500
 
+# ------------------- RUN -------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
