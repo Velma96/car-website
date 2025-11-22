@@ -1,9 +1,7 @@
-// src/pages/Contact.js
+// src/pages/Contact.js — FINAL WORKING VERSION (WhatsApp Direct)
 import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Alert, Card } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
-import axios from 'axios';
-import API_BASE from '../api/api';  // THIS IS THE MAGIC LINE
 
 const Contact = () => {
   const location = useLocation();
@@ -25,20 +23,20 @@ const Contact = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setStatus('sending');
 
-    try {
-      await axios.post(`${API_BASE}/send-inquiry`, formData, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-      setStatus('success');
-      setFormData({ name: '', phone: '', email: '', message: '', car_interest: prefilledCar });
-    } catch (err) {
-      console.error("Inquiry failed:", err.response || err);
-      setStatus('error');
-    }
+    const text = `NEW INQUIRY!\n\nName: ${formData.name}\nPhone: ${formData.phone}\nEmail: ${formData.email || 'None'}\nCar: ${formData.car_interest || 'Not specified'}\nMessage: ${formData.message || 'No message'}`;
+
+    const encoded = encodeURIComponent(text);
+    const whatsappURL = `https://wa.me/254720789084?text=${encoded}`;
+
+    // Open WhatsApp instantly
+    window.open(whatsappURL, '_blank');
+
+    setStatus('success');
+    setFormData({ name: '', phone: '', email: '', message: '', car_interest: prefilledCar });
   };
 
   return (
@@ -62,13 +60,7 @@ const Contact = () => {
 
               {status === 'success' && (
                 <Alert variant="success" className="mb-4">
-                  Thank you! We’ve received your inquiry and will call you shortly.
-                </Alert>
-              )}
-
-              {status === 'error' && (
-                <Alert variant="danger" className="mb-4">
-                  Failed to send. Please WhatsApp us at +254 720 789 084
+                  Opening WhatsApp... Your inquiry is being sent!
                 </Alert>
               )}
 
@@ -79,8 +71,8 @@ const Contact = () => {
                     <Form.Control name="name" value={formData.name} onChange={handleChange} required />
                   </div>
                   <div className="col-md-6 mb-3">
-                    <Form.Label>Phone Number *</Form.Label>
-                    <Form.Control name="phone" type="tel" value={formData.phone} onChange={handleChange} required />
+                    <Form.Label>Phone Number (WhatsApp) *</Form.Label>
+                    <Form.Control name="phone" type="tel" value={formData.phone} onChange={handleChange} required placeholder="+254 712 345 678" />
                   </div>
                 </div>
 
@@ -108,16 +100,17 @@ const Contact = () => {
                 <Button 
                   variant="success" 
                   size="lg" 
-                  type="submit" 
-                  disabled={status === 'sending'}
-                  className="w-100"
+                  type="submit"
+                  className="w-100 d-flex align-items-center justify-content-center gap-2"
                 >
-                  {status === 'sending' ? 'Sending...' : 'Send Inquiry – We’ll Call You!'}
+                  <i className="fab fa-whatsapp"></i>
+                  {status === 'sending' ? 'Opening WhatsApp...' : 'Send via WhatsApp – Instant Reply!'}
                 </Button>
               </Form>
 
               <div className="text-center mt-4">
                 <p><strong>Call / WhatsApp:</strong> +254 720 789 084</p>
+                <p className="text-success">You’ll get inquiries directly on your phone!</p>
               </div>
             </Card.Body>
           </Card>
