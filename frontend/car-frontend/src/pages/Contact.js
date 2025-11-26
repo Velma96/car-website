@@ -1,4 +1,4 @@
-// src/pages/Contact.js — FINAL WORKING VERSION (WhatsApp Direct)
+// src/pages/Contact.js — FINAL & 100% CLEAN
 import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Alert, Card } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
@@ -17,7 +17,7 @@ const Contact = () => {
     if (prefilledCar && !formData.car_interest) {
       setFormData(prev => ({ ...prev, car_interest: prefilledCar }));
     }
-  }, [prefilledCar]);
+  }, [prefilledCar, formData.car_interest]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,7 +32,6 @@ const Contact = () => {
     const encoded = encodeURIComponent(text);
     const whatsappURL = `https://wa.me/254720789084?text=${encoded}`;
 
-    // Open WhatsApp instantly
     window.open(whatsappURL, '_blank');
 
     setStatus('success');
@@ -83,10 +82,10 @@ const Contact = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Car You're Interested In</Form.Label>
-                  <Form.Control 
-                    name="car_interest" 
-                    value={formData.car_interest} 
-                    onChange={handleChange} 
+                  <Form.Control
+                    name="car_interest"
+                    value={formData.car_interest}
+                    onChange={handleChange}
                     readOnly={!!prefilledCar}
                     style={prefilledCar ? { backgroundColor: '#e8f5e8', fontWeight: 'bold' } : {}}
                   />
@@ -97,14 +96,13 @@ const Contact = () => {
                   <Form.Control as="textarea" rows={4} name="message" value={formData.message} onChange={handleChange} />
                 </Form.Group>
 
-                <Button 
-                  variant="success" 
-                  size="lg" 
+                <Button
+                  variant="success"
+                  size="lg"
                   type="submit"
                   className="w-100 d-flex align-items-center justify-content-center gap-2"
                 >
-                  <i className="fab fa-whatsapp"></i>
-                  {status === 'sending' ? 'Opening WhatsApp...' : 'Send via WhatsApp – Instant Reply!'}
+                  Send via WhatsApp – Instant Reply!
                 </Button>
               </Form>
 

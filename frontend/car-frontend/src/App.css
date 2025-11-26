@@ -1,109 +1,179 @@
-/* src/App.css - Premium Professional Theme */
-.App {
+/* src/App.css — FINAL LUXURY THEME FOR ALL PAGES */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #fafafa !important;     /* Light luxury background */
+  color: #222 !important;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ALL PAGES NOW HAVE SAME LIGHT BACKGROUND */
+.luxury-app > div:not(.hero-light) {
+  background: #fafafa !important;
   min-height: 100vh;
-  background: #f8f9fc;
-  display: flex;
-  flex-direction: column;
 }
 
-/* NAVBAR */
-.navbar-custom {
-  background: white !important;
-  padding: 1rem 0;
-  border-bottom: 5px solid #0066cc;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+/* HERO — LIGHT THEME */
+.hero-light {
+  min-height: 90vh;
+  background: linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)),
+              url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2940') center/cover no-repeat;
+  background-attachment: fixed;
+  padding: 140px 0 80px !important;
 }
 
-.logo-img {
-  transition: all 0.3s ease;
+.hero-title-light {
+  font-size: 5.5rem;
+  font-weight: 900;
+  color: #1a1a1a;
+  line-height: 1;
+  font-family: 'Playfair Display', serif;
+  letter-spacing: -2px;
+}
+
+.hero-subtitle-light {
+  font-size: 1.4rem;
+  color: #444;
+  max-width: 600px;
+  margin: 2rem 0;
+  line-height: 1.6;
+}
+
+.btn-explore-light {
+  background: #1a1a1a;
+  color: white;
+  padding: 1rem 3rem;
+  border-radius: 50px;
+  font-weight: bold;
+  transition: all 0.4s;
+}
+
+.btn-explore-light:hover {
+  background: #333;
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+.btn-learn-light {
+  border: 2px solid #1a1a1a;
+  color: #1a1a1a;
+  background: transparent;
+}
+
+/* CAROUSEL */
+.hero-carousel {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.15);
+}
+
+.hero-car-wrapper {
+  position: relative;
+  height: 500px;
+}
+
+.hero-car-img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-.logo-img:hover {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 10px 20px rgba(0, 102, 204, 0.3) !important;
+.hero-car-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  color: white;
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
 }
 
-.brand-title {
-  font-size: 1.9rem;
-  color: #0066cc;
+/* NAVBAR FIX */
+html {
+  scroll-padding-top: 120px;
+}
+
+/* LUXURY NAVBAR */
+.luxury-navbar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  padding: 1rem 0;
+  z-index: 9999;
+}
+
+.luxury-brand {
+  font-size: 1.8rem;
   font-weight: 900;
-  letter-spacing: 1px;
+  color: #1a1a1a !important;
 }
 
-.nav-link-custom {
+.brand-p {
+  color: #d4af37;
+  font-size: 2.2rem;
+}
+
+.luxury-nav .nav-link {
   color: #333 !important;
-  padding: 0.6rem 1.2rem !important;
-  border-radius: 50px;
-  transition: all 0.3s ease;
   font-weight: 600;
+  margin: 0 1rem;
+  transition: all 0.3s;
 }
 
-.nav-link-custom:hover,
-.nav-link-custom.active {
-  background: #0066cc;
+.luxury-nav .nav-link:hover {
+  color: #d4af37 !important;
+}
+
+.btn-schedule {
+  background: #d4af37 !important;
   color: white !important;
-  transform: translateY(-2px);
-}
-
-.nav-link-admin {
-  color: #dc3545 !important;
-  font-weight: bold;
+  padding: 0.7rem 1.8rem !important;
+  border-radius: 50px !important;
+  font-weight: bold !important;
 }
 
 /* FOOTER */
-.footer-custom {
-  background: #1a1a1a;
-  color: white;
-  border-top: 5px solid #0066cc;
-  margin-top: auto;
+.luxury-footer {
+  background: #111;
+  color: #aaa;
+  padding: 4rem 0 2rem;
+  margin-top: 5rem;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer-line {
+  border-color: #333;
+}
+
+.luxury-footer h4, .luxury-footer h6 {
+  color: #d4af37;
+}
+
+/* PAGE CONTENT PADDING */
+.container {
+  padding-top: 120px;
 }
 
 /* CARDS */
 .card {
-  background: white !important;
-  border: none !important;
-  border-radius: 16px !important;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
-  transition: all 0.4s ease;
+  background: white;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  transition: all 0.3s;
 }
 
 .card:hover {
-  transform: translateY(-12px);
-  box-shadow: 0 25px 50px rgba(0, 102, 204, 0.2) !important;
-}
-
-/* BUTTONS */
-.btn-success,
-.btn-primary {
-  background: #0066cc !important;
-  border: none !important;
-  font-weight: bold;
-  border-radius: 12px;
-  padding: 0.8rem 2rem;
-  transition: all 0.3s ease;
-}
-
-.btn-success:hover,
-.btn-primary:hover {
-  background: #0052a3 !important;
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0, 102, 204, 0.3) !important;
-}
-
-/* Brand buttons hover */
-.brand-btn:hover {
-  transform: scale(1.12) !important;
-  box-shadow: 0 15px 30px rgba(0, 102, 204, 0.3) !important;
-}
-
-.brand-btn img,
-.brand-btn svg {
-  transition: transform 0.4s ease;
-}
-
-.brand-btn:hover img,
-.brand-btn:hover svg {
-  transform: scale(1.25);
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }

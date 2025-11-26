@@ -1,11 +1,12 @@
-// src/pages/Home.js
+// src/pages/Home.js — FINAL, CLEAN & DEPLOY-READY
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Row, Col, Carousel, Button } from 'react-bootstrap';
+import { Container, Row, Col, Button, Carousel } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import CarCard from '../components/CarCard';
 import SearchFilter from '../components/SearchFilter';
 
-// ALL BRAND LOGOS (restored exactly as before)
+// Full brands array — unchanged
 const brands = [
   { name: 'Toyota', logo: <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="none" stroke="#C3002F" strokeWidth="5"/><circle cx="50" cy="50" r="30" fill="none" stroke="#C3002F" strokeWidth="5"/><circle cx="50" cy="50" r="20" fill="none" stroke="#C3002F" strokeWidth="5"/><text x="50" y="58" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#C3002F">TOYOTA</text></svg> },
   { name: 'Nissan', logo: <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="35" width="70" height="30" rx="15" fill="#C3002F"/><text x="50" y="55" textAnchor="middle" fontSize="14" fontWeight="bold" fill="white">NISSAN</text></svg> },
@@ -25,107 +26,140 @@ const brands = [
 ];
 
 const Home = () => {
-  const [cars, setCars] = useState([]);
+  const navigate = useNavigate();
+  const [allCars, setAllCars] = useState([]);
   const [displayCars, setDisplayCars] = useState([]);
+  const [featuredCars, setFeaturedCars] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState(null);
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+  const API_URL = process.env.REACT_APP_API_URL || 'https://velma-backend.onrender.com';
 
   useEffect(() => {
     axios.get(`${API_URL}/cars`)
       .then(res => {
         const activeCars = res.data.filter(car => !car.is_sold);
-        setCars(activeCars);
+        setAllCars(activeCars);
         setDisplayCars(activeCars);
+        setFeaturedCars(activeCars.filter(car => car.is_featured).slice(0, 8));
       })
       .catch(err => console.error("Failed to load cars:", err));
-  }, [API_URL]);
+  }, [API_URL]); // ← Fixed: API_URL is now in dependencies
 
   const filterByBrand = (brand) => {
     setSelectedBrand(brand);
-    if (!brand) {
-      setDisplayCars(cars);
-    } else {
-      setDisplayCars(cars.filter(car => car.make.toLowerCase() === brand.toLowerCase()));
-    }
+    if (!brand) setDisplayCars(allCars);
+    else setDisplayCars(allCars.filter(car => car.make.toLowerCase() === brand.toLowerCase()));
+    document.getElementById('collection-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const featuredCars = cars.filter(car => car.is_featured && !car.is_sold);
+  const handleSearch = ({ searchTerm, minPrice, maxPrice }) => {
+    let filtered = allCars;
+    if (searchTerm) filtered = filtered.filter(car => `${car.make} ${car.model}`.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (minPrice) filtered = filtered.filter(car => car.price >= parseInt(minPrice));
+    if (maxPrice) filtered = filtered.filter(car => car.price <= parseInt(maxPrice));
+    setDisplayCars(filtered);
+  };
 
   return (
-    <Container className="my-5">
-
-      {/* Featured Carousel */}
-      {featuredCars.length > 0 && (
-        <>
-          <h2 className="text-center mb-5 fw-bold text-primary">Featured Vehicle</h2>
-          <Carousel className="mb-5 shadow-lg rounded">
-            {featuredCars.map(car => (
-              <Carousel.Item key={car.id}>
-                <img
-                  src={car.image_urls?.[0] || 'https://via.placeholder.com/800x600?text=No+Image'}
-                  className="d-block w-100"
-                  alt={`${car.make} ${car.model}`}
-                  style={{ height: '500px', objectFit: 'cover' }}
-                />
-                <Carousel.Caption className="bg-dark bg-opacity-80 rounded p-4">
-                  <h3 className="display-5 fw-bold">{car.make} {car.model}</h3>
-                  <p className="fs-3 text-white">KES {car.price.toLocaleString()}</p>
-                </Carousel.Caption>
-              </Carousel.Item>
-            ))}
-          </Carousel>
-        </>
-      )}
-
-      {/* BROWSE BY BRAND – FULLY RESTORED */}
-      <div className="text-center my-5 py-5 bg-light rounded shadow-sm">
-        <h2 className="mb-4 fw-bold text-primary">Browse by Brand</h2>
-        <div className="d-flex flex-wrap justify-content-center gap-4">
-          <Button
-            variant={selectedBrand === null ? "primary" : "outline-secondary"}
-            className="p-3"
-            onClick={() => filterByBrand(null)}
-          >
-            <strong>All Brands</strong>
-          </Button>
-
-          {brands.map(brand => (
-            <Button
-              key={brand.name}
-              variant={selectedBrand === brand.name ? "primary" : "outline-primary"}
-              className="d-flex flex-column align-items-center justify-content-center p-3 rounded shadow-sm brand-btn"
-              onClick={() => filterByBrand(brand.name)}
-              style={{ width: '130px', height: '130px', borderWidth: '2px' }}
-            >
-              {brand.logo}
-              <small className="mt-1 fw-bold">{brand.name}</small>
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Car List */}
-      <h1 className="mb-4 text-center">
-        {selectedBrand ? `${selectedBrand} Cars` : 'All Available Cars'} ({displayCars.length})
-      </h1>
-      <SearchFilter onSearch={() => {}} />
-
-      <Row>
-        {displayCars.length === 0 ? (
-          <Col className="text-center py-5">
-            <h3>No {selectedBrand || 'cars'} in stock right now</h3>
-            <p>New stock arrives daily — check back soon!</p>
-          </Col>
-        ) : (
-          displayCars.map(car => (
-            <Col xs={12} md={6} lg={4} key={car.id} className="mb-4">
-              <CarCard car={car} />
+    <>
+      <section className="hero-light" style={{ paddingTop: '120px' }}>
+        <Container className="h-100">
+          <Row className="h-100 align-items-center">
+            <Col lg={6} className="text-center text-lg-start">
+              <h1 className="hero-title-light">The Art Of Driving</h1>
+              <p className="hero-subtitle-light">
+                Experience curated luxury. Our exclusive collection features the world's finest automobiles,
+                each meticulously selected and maintained to the highest standards.
+              </p>
+              <div className="mt-5">
+                <Button 
+                  size="lg" 
+                  className="btn-explore-light me-4"
+                  onClick={() => document.getElementById('collection-section')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  Explore Collection
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline-dark" 
+                  className="btn-learn-light"
+                  onClick={() => navigate('/about')}
+                >
+                  Learn More
+                </Button>
+              </div>
             </Col>
-          ))
-        )}
-      </Row>
-    </Container>
+            <Col lg={6}>
+              {featuredCars.length > 0 ? (
+                <Carousel fade controls={false} indicators={false} interval={4000} pause={false}>
+                  {featuredCars.map(car => (
+                    <Carousel.Item key={car.id}>
+                      <div className="hero-car-wrapper">
+                        <img src={car.image_urls?.[0]} alt={`${car.make} ${car.model}`} className="hero-car-img" />
+                        <div className="hero-car-caption">
+                          <h4>{car.make} {car.model} {car.year}</h4>
+                          <p className="fw-bold">KES {parseFloat(car.price).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </Carousel.Item>
+                  ))}
+                </Carousel>
+              ) : (
+                <div className="hero-car-placeholder">
+                  <img src="https://images.unsplash.com/photo-1544636331-6035f89e13d8?q=80&w=2940" alt="Luxury" className="hero-car-img" />
+                </div>
+              )}
+            </Col>
+          </Row>
+        </Container>
+      </section>
+
+      <section className="py-5 bg-light">
+        <Container>
+          <h2 className="text-center mb-5 fw-bold">Browse by Brand</h2>
+          <div className="d-flex flex-wrap justify-content-center gap-3">
+            <Button variant={selectedBrand === null ? "dark" : "outline-dark"} className="px-4" onClick={() => filterByBrand(null)}>
+              All Brands
+            </Button>
+            {brands.map(brand => (
+              <Button
+                key={brand.name}
+                variant={selectedBrand === brand.name ? "dark" : "outline-secondary"}
+                className="d-flex flex-column align-items-center p-3 brand-btn"
+                onClick={() => filterByBrand(brand.name)}
+                style={{ width: '130px', height: '130px' }}
+              >
+                {brand.logo}
+                <small className="mt-1 fw-bold">{brand.name}</small>
+              </Button>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      <section id="collection-section" className="py-5 bg-white">
+        <Container>
+          <h2 className="mb-4 text-center">
+            {selectedBrand ? `${selectedBrand} Cars` : 'Our Collection'} ({displayCars.length})
+          </h2>
+          <SearchFilter onSearch={handleSearch} />
+          <Row>
+            {displayCars.length === 0 ? (
+              <Col className="text-center py-5">
+                <h3>No cars found</h3>
+                <p>Try adjusting your filters.</p>
+              </Col>
+            ) : (
+              displayCars.map(car => (
+                <Col xs={12} md={6} lg={4} key={car.id} className="mb-4">
+                  <CarCard car={car} />
+                </Col>
+              ))
+            )}
+          </Row>
+        </Container>
+      </section>
+    </>
   );
 };
 

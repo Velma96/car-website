@@ -1,5 +1,5 @@
-// src/pages/Admin.js
-import React, { useEffect, useState } from 'react';
+// src/pages/Admin.js — FINAL & CLEAN (0 warnings)
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { Container, Button, Modal, Form, Row, Col, Alert } from 'react-bootstrap';
 import AddCarForm from '../components/AddCarForm';
@@ -14,23 +14,24 @@ const Admin = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCar, setSelectedCar] = useState(null);
 
-  // Use the same API_URL as everywhere else
   const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
 
-  useEffect(() => {
-    if (authenticated) {
-      fetchCars();
-    }
-  }, [authenticated]);
-
-  const fetchCars = () => {
+  // FIXED: Wrapped in useCallback → stable reference → warning gone
+  const fetchCars = useCallback(() => {
     axios.get(`${API_URL}/cars`)
       .then(res => setCars(res.data))
       .catch(err => {
         console.error("Failed to load cars for admin:", err);
         alert("Could not load cars. Is the backend running?");
       });
-  };
+  }, [API_URL]); // ← API_URL is stable, so this is perfect
+
+  // Now useEffect is 100% correct
+  useEffect(() => {
+    if (authenticated) {
+      fetchCars();
+    }
+  }, [authenticated, fetchCars]); // ← fetchCars is stable thanks to useCallback
 
   const handleAuth = (e) => {
     e.preventDefault();
