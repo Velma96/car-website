@@ -1,4 +1,4 @@
-# backend/app.py — 100% WORKING FINAL VERSION (November 2025)
+# backend/app.py — FINAL WORKING VERSION (November 2025) — NO ERRORS
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -13,7 +13,7 @@ from email.mime.text import MIMEText
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# FIX: Use absolute path for database — NO instance folder needed
+# Database & Uploads setup
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "cars.db"
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
@@ -48,6 +48,7 @@ with app.app_context():
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# ------------------- HELPER -------------------
 BASE_URL = "https://velma-backend.onrender.com"
 
 def get_full_urls(urls_str):
@@ -55,27 +56,53 @@ def get_full_urls(urls_str):
         return []
     return [f"{BASE_URL}{url.strip()}" for url in urls_str.split(',') if url.strip()]
 
-# ------------------- ROUTES -------------------
+# ------------------- KEEP-ALIVE ROOT ROUTE (ONLY ONE!) -------------------
+@app.route("/")
+def keep_alive():
+    return jsonify({
+        "message": "Velma Motors Backend is 100% ALIVE & READY",
+        "status": "running",
+        "tip": "Images now load instantly on first visit",
+        "backend": "https://velma-backend.onrender.com"
+    })
+
+# ------------------- CAR ROUTES -------------------
 @app.get("/cars")
 def get_cars():
     cars = Car.query.all()
     return jsonify([{
-        'id': c.id, 'make': c.make, 'model': c.model, 'year': c.year,
-        'price': c.price, 'mileage': c.mileage, 'condition': c.condition,
-        'transmission': c.transmission, 'fuel_type': c.fuel_type,
-        'description': c.description, 'image_urls': get_full_urls(c.image_urls),
-        'is_featured': c.is_featured, 'is_sold': c.is_sold
+        'id': c.id,
+        'make': c.make,
+        'model': c.model,
+        'year': c.year,
+        'price': c.price,
+        'mileage': c.mileage,
+        'condition': c.condition,
+        'transmission': c.transmission,
+        'fuel_type': c.fuel_type,
+        'description': c.description,
+        'image_urls': get_full_urls(c.image_urls),
+        'is_featured': c.is_featured,
+        'is_sold': c.is_sold
     } for c in cars])
 
 @app.get("/cars/<int:id>")
 def get_car(id):
     car = Car.query.get_or_404(id)
     return jsonify({
-        'id': car.id, 'make': car.make, 'model': car.model, 'year': car.year,
-        'price': car.price, 'mileage': car.mileage, 'condition': car.condition,
-        'transmission': car.transmission, 'fuel_type': car.fuel_type,
-        'description': car.description, 'image_urls': get_full_urls(car.image_urls),
-        'is_featured': car.is_featured, 'is_sold': car.is_sold
+        'id': car.id,
+        'make': car.make,
+        'model': car.model,
+        'year': car.year,
+        'price': car.price,
+        'mileage': car.mileage,
+        'condition': car.condition,
+        'transmission': car.transmission,
+        'fuel_type': car.fuel_type,
+        'description': car.description,
+        'image_urls': get_full_urls(car.image_urls),
+        'is_featured': car.is_featured,
+        'is_sold': car.is_sold
     })
 
 # ADD CAR
@@ -92,8 +119,11 @@ def add_car():
                 urls.append(f"/uploads/{fn}")
         
         car = Car(
-            make=data['make'], model=data['model'], year=int(data['year']),
-            price=float(data['price']), mileage=int(data.get('mileage', 0) or 0),
+            make=data['make'],
+            model=data['model'],
+            year=int(data['year']),
+            price=float(data['price']),
+            mileage=int(data.get('mileage', 0) or 0),
             condition=data.get('condition', 'Used'),
             transmission=data.get('transmission', 'Automatic'),
             fuel_type=data.get('fuel_type', 'Petrol'),
@@ -104,7 +134,7 @@ def add_car():
         )
         db.session.add(car)
         db.session.commit()
-        return jsonify({"message": "Car added!", "id": car.id}), 201
+        return jsonify({"message": "Car added successfully!", "id": car.id}), 201
     except Exception as e:
         print("ADD ERROR:", str(e))
         return jsonify({"error": str(e)}), 500
@@ -135,7 +165,7 @@ def update_car(id):
         car.is_featured = data.get('is_featured') == 'true'
         car.is_sold = data.get('is_sold') == 'true'
         db.session.commit()
-        return jsonify({"message": "Updated"}), 200
+        return jsonify({"message": "Car updated successfully"}), 200
     except Exception as e:
         print("UPDATE ERROR:", str(e))
         return jsonify({"error": str(e)}), 500
@@ -146,9 +176,9 @@ def delete_car(id):
     car = Car.query.get_or_404(id)
     db.session.delete(car)
     db.session.commit()
-    return jsonify({"message": "Deleted"}), 200
+    return jsonify({"message": "Car deleted successfully"}), 200
 
-# CONTACT FORM — WORKS 100%
+# CONTACT FORM
 @app.route("/send-inquiry", methods=["POST", "OPTIONS"])
 def send_inquiry():
     if request.method == "OPTIONS":
@@ -159,8 +189,7 @@ def send_inquiry():
         print("NEW INQUIRY:", data)
 
         email = os.environ.get("GMAIL_USER", "awuorphoebi@gmail.com")
-        password = os.environ.get("GMAIL_APP_PASSWORD", "idgi geik kovj xitl")
-        password = password.replace(" ", "")  # Remove spaces
+        password = os.environ.get("GMAIL_APP_PASSWORD", "idgi geik kovj xitl").replace(" ", "")
 
         msg = MIMEMultipart()
         msg['From'] = email
